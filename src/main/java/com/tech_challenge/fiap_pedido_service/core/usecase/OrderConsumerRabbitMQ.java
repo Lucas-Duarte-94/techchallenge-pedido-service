@@ -4,6 +4,9 @@ import com.rabbitmq.client.Channel;
 import com.tech_challenge.fiap_pedido_service.core.domain.entity.Pedido;
 import com.tech_challenge.fiap_pedido_service.core.dto.CreatePedidoDTO;
 import com.tech_challenge.fiap_pedido_service.core.dto.StatusEnum;
+
+import jakarta.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -16,23 +19,23 @@ import java.io.IOException;
 public class OrderConsumerRabbitMQ {
 
     private final Logger logger = LoggerFactory.getLogger(OrderConsumerRabbitMQ.class);
+    private CreatePedidoUseCase createPedidoUseCase;
+
+    public OrderConsumerRabbitMQ(CreatePedidoUseCase createPedidoUseCase) {
+        this.createPedidoUseCase = createPedidoUseCase;
+    }
 
     @RabbitListener(queues = "${app.rabbitmq.queue}")
+    @Transactional
     public void listen(CreatePedidoDTO pedidoDTO, Message message, Channel channel) throws IOException {
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-            var pedido = Pedido.builder()
-                    .paymentInfo(pedidoDTO.paymentInfo())
-                    .userId(pedidoDTO.userID())
-                    .status(StatusEnum.ABERTO)
-                    .itens(pedidoDTO.pedidos())
-                    .build();
-
-            long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        this.createPedidoUseCase.create(pedidoDTO);
 
         try {
             channel.basicAck(deliveryTag, false);
             logger.info("✅ NOTIFICAÇÃO PROCESSADA COM SUCESSO!");
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("❌ ERRO ao processar notificação: {}", e.getMessage(), e);
 
             // Rejeita a mensagem e envia para Dead Letter Queue
