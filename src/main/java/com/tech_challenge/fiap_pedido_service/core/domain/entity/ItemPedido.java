@@ -16,6 +16,10 @@ import lombok.Setter;
 @Builder
 public class ItemPedido {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    @Column(name = "product_sku")
     private String productSKU;
 
     private Integer qtd;

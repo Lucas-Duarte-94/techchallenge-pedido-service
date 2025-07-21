@@ -30,9 +30,9 @@ public class OrderConsumerRabbitMQ {
     public void listen(CreatePedidoDTO pedidoDTO, Message message, Channel channel) throws IOException {
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-        this.createPedidoUseCase.create(pedidoDTO);
-
         try {
+            this.createPedidoUseCase.create(pedidoDTO);
+
             channel.basicAck(deliveryTag, false);
             logger.info("✅ NOTIFICAÇÃO PROCESSADA COM SUCESSO!");
         } catch (Exception e) {

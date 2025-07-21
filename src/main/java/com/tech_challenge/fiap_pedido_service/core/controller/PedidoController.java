@@ -1,3 +1,5 @@
+package com.tech_challenge.fiap_pedido_service.core.controller;
+
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ public class PedidoController {
         this.produtoClient = produtoClient;
     }
 
-    @GetMapping("/produtos")
+    @GetMapping
     public ResponseEntity<List<Produto>> listarProdutos() {
         var produtos = produtoClient.buscarProdutos();
         return ResponseEntity.ok().body(produtos);
