@@ -2,14 +2,19 @@ package com.tech_challenge.fiap_pedido_service.core.usecase;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import feign.FeignException;
+import jakarta.transaction.Transactional;
+
 import com.tech_challenge.fiap_pedido_service.core.domain.entity.ItemPedido;
 import com.tech_challenge.fiap_pedido_service.core.domain.entity.Pedido;
 import com.tech_challenge.fiap_pedido_service.core.dto.CreatePedidoDTO;
+import com.tech_challenge.fiap_pedido_service.core.dto.ItemPedidoDTO;
+import com.tech_challenge.fiap_pedido_service.core.dto.ReserveEstoqueDTO;
 import com.tech_challenge.fiap_pedido_service.core.dto.StatusEnum;
+import com.tech_challenge.fiap_pedido_service.core.exception.OutOfStockException;
+import com.tech_challenge.fiap_pedido_service.core.exception.ProductStockException;
 import com.tech_challenge.fiap_pedido_service.core.gateway.EstoqueClient;
 import com.tech_challenge.fiap_pedido_service.core.gateway.ProdutoClient;
 import com.tech_challenge.fiap_pedido_service.core.gateway.RepositoryGateway;
@@ -32,6 +37,7 @@ public class CreatePedidoUseCaseImpl implements CreatePedidoUseCase {
     }
 
     @Override
+    @Transactional
     public void create(CreatePedidoDTO createPedidoDTO) {
         var pedido = Pedido.builder()
                 .userId(createPedidoDTO.userID())
@@ -46,6 +52,14 @@ public class CreatePedidoUseCaseImpl implements CreatePedidoUseCase {
                         this.status = StatusEnum.FECHADO_INVALIDO;
                     }
 
+                    var estoqueDisponivel = verifyProductStock(itemPedido.productSKU());
+
+                    logger.debug("productSKU: {} - estoque disponivel: {}", itemPedido.productSKU(), estoqueDisponivel);
+
+                    if (estoqueDisponivel < itemPedido.qtd()) {
+                        throw new OutOfStockException(itemPedido.productSKU());
+                    }
+
                     return ItemPedido.builder()
                             .productSKU(itemPedido.productSKU())
                             .qtd(itemPedido.qtd())
@@ -57,7 +71,14 @@ public class CreatePedidoUseCaseImpl implements CreatePedidoUseCase {
         pedido.setItens(itensPedido);
         pedido.setStatus(this.status);
 
-        this.repository.save(pedido);
+        var savedPedido = this.repository.save(pedido);
+
+        ReserveEstoqueDTO dto = new ReserveEstoqueDTO(
+                savedPedido.getItens().stream()
+                        .map(item -> new ItemPedidoDTO(item.getProductSKU(), item.getQtd()))
+                        .toList(),
+                savedPedido.getId());
+        this.estoqueClient.reserveStock(dto);
     }
 
     private boolean verifyIfProductExists(String productSKU) {
@@ -74,4 +95,24 @@ public class CreatePedidoUseCaseImpl implements CreatePedidoUseCase {
         }
     }
 
+    private int verifyProductStock(String productSKU) {
+        try {
+            int quantidadeDisponivel = this.estoqueClient.getEstoqueByProductSKU(productSKU).quantidadeDisponivel();
+
+            return quantidadeDisponivel;
+        } catch (FeignException.NotFound ex) {
+            throw new ProductStockException("Produto com SKU {} não encontrado no serviço de produtos." + productSKU);
+        } catch (Exception ex) {
+            logger.error("Erro ao consultar estoque com codigo: {}\n - Stacktrace: {}", productSKU, ex.getMessage());
+            throw new ProductStockException("Erro ao consultar estoque");
+        }
+    }
+
 }
+
+// ReserveEstoqueDTO dto = new ReserveEstoqueDTO(
+// savedPedido.getItens().stream()
+// .map(item -> new ItemPedidoDTO(item.getProductSKU(), item.getQtd()))
+// .toList(),
+// savedPedido.getId());
+// this.estoqueClient.reserveStock(dto);
