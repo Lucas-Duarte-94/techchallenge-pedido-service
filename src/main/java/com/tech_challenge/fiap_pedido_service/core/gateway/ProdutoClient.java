@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.tech_challenge.fiap_pedido_service.core.domain.entity.Produto;
 
-@FeignClient(name = "produto-service", url = "http://localhost:8082/produto")
+@FeignClient(name = "produto-service", url = "${produto.service.url:http://localhost:8082/produto}")
 public interface ProdutoClient {
     @GetMapping()
     List<Produto> buscarProdutos();

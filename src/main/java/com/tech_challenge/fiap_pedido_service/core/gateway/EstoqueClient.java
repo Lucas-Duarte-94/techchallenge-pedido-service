@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.tech_challenge.fiap_pedido_service.core.dto.EstoqueResponseDTO;
 import com.tech_challenge.fiap_pedido_service.core.dto.ReserveEstoqueDTO;
 
-@FeignClient(name = "estoque-service", url = "http://localhost:8083/estoque")
+@FeignClient(name = "estoque-service", url = "${estoque.service.url:http://localhost:8083/estoque}")
 public interface EstoqueClient {
     @GetMapping("/{product_sku}")
     EstoqueResponseDTO getEstoqueByProductSKU(@PathVariable("product_sku") String productSKU);

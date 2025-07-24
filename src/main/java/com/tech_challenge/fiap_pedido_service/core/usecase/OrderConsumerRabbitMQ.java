@@ -1,9 +1,7 @@
 package com.tech_challenge.fiap_pedido_service.core.usecase;
 
 import com.rabbitmq.client.Channel;
-import com.tech_challenge.fiap_pedido_service.core.domain.entity.Pedido;
 import com.tech_challenge.fiap_pedido_service.core.dto.CreatePedidoDTO;
-import com.tech_challenge.fiap_pedido_service.core.dto.StatusEnum;
 
 import jakarta.transaction.Transactional;
 
@@ -41,6 +39,7 @@ public class OrderConsumerRabbitMQ {
             // Rejeita a mensagem e envia para Dead Letter Queue
             channel.basicNack(deliveryTag, false, false);
             logger.error("🗑️ Mensagem enviada para Dead Letter Queue");
+            throw new RuntimeException(String.format("Erro ao processar pedido: %s", e.getMessage()), e);
         }
     }
 
