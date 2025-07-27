@@ -5,6 +5,6 @@ import java.util.List;
 public record CreatePedidoDTO(
         List<ItemPedidoDTO> pedidos,
         String userID,
-        String paymentInfo
+        PaymentInfoDTO paymentInfo
 ) {
 }

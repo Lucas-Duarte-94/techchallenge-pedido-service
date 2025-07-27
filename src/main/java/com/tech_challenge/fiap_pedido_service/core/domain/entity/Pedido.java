@@ -1,10 +1,12 @@
 package com.tech_challenge.fiap_pedido_service.core.domain.entity;
 
+import com.tech_challenge.fiap_pedido_service.core.dto.PaymentInfoDTO;
 import com.tech_challenge.fiap_pedido_service.core.dto.StatusEnum;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,7 +23,9 @@ public class Pedido {
     private String id;
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> itens;
-    private String paymentInfo;
+    @Transient
+    private PaymentInfoDTO paymentInfo;
+    private BigDecimal total;
     private String userId;
     @Enumerated(EnumType.STRING)
     private StatusEnum status;

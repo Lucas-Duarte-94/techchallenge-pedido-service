@@ -1,5 +1,7 @@
 package com.tech_challenge.fiap_pedido_service.core.domain.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +25,8 @@ public class ItemPedido {
     private String productSKU;
 
     private Integer qtd;
+
+    private BigDecimal preco;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")

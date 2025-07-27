@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.tech_challenge.fiap_pedido_service.core.dto.EstoqueResponseDTO;
+import com.tech_challenge.fiap_pedido_service.core.dto.PedidoIdRequestDTO;
 import com.tech_challenge.fiap_pedido_service.core.dto.ReserveEstoqueDTO;
 
 @FeignClient(name = "estoque-service", url = "${estoque.service.url:http://localhost:8083/estoque}")
@@ -17,8 +18,8 @@ public interface EstoqueClient {
     void reserveStock(ReserveEstoqueDTO pedidoDTO);
 
     @PostMapping("/cancel")
-    void changeToCancelStatus(String pedidoId);
+    void changeToCancelStatus(PedidoIdRequestDTO pedidoIdRequestDTO);
 
     @PostMapping("/confirm")
-    void changeToConfirmedStatus(String pedidoId);
+    void changeToConfirmedStatus(PedidoIdRequestDTO pedidoIdRequestDTO);
 }
