@@ -20,6 +20,10 @@ public class PedidoImplementation implements PedidoGateway {
             PedidoPaymentFailUseCase pedidoPaymentFailUseCase,
             PedidoSuccessUseCase pedidoSuccessUseCase) {
         this.createPedidoUseCase = createPedidoUseCase;
+        this.pedidoExpiredUseCase = pedidoExpiredUseCase;
+        this.pedidoOutOfStockUseCase = pedidoOutOfStockUseCase;
+        this.pedidoPaymentFailUseCase = pedidoPaymentFailUseCase;
+        this.pedidoSuccessUseCase = pedidoSuccessUseCase;
     }
 
     @Override

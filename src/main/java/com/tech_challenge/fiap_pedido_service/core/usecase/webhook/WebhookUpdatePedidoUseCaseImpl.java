@@ -13,7 +13,7 @@ import com.tech_challenge.fiap_pedido_service.core.gateway.EstoqueClient;
 import com.tech_challenge.fiap_pedido_service.core.gateway.PagamentoClient;
 import com.tech_challenge.fiap_pedido_service.core.gateway.RepositoryGateway;
 
-import feign.FeignException.FeignClientException;
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 
 @Component
@@ -48,7 +48,7 @@ public class WebhookUpdatePedidoUseCaseImpl implements WebhookUpdatePedidoUseCas
             this.pagamentoClient.updatePagamento(new UpdatePagamentoRequestDTO(pedido.getId(), requestDTO.status()));
             this.estoqueClient.changeToConfirmedStatus(new PedidoIdRequestDTO(pedido.getId()));
 
-        } catch (FeignClientException ex) {
+        } catch (FeignException ex) {
             throw new RequestException("Erro ao fazer uma requisição. - Stacktrace: " + ex.getMessage());
         }
     }
